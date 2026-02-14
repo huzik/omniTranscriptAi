@@ -1,0 +1,8 @@
+{
+  "name": "OmniTranscript AI",
+  "description": "A high-performance media transcription tool that converts images, video, and audio into text using advanced AI models.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
