@@ -27,19 +27,19 @@ export const transcribeMedia = async (file: File, type: MediaType): Promise<stri
   const ai = getAiClient();
   const base64Data = await fileToBase64(file);
 
-  // Using the high-speed standard neural engine as requested
+  // Gemini 3 Flash is high-speed; disabling thinking for maximum throughput
   const modelName = 'gemini-3-flash-preview';
   
   let prompt = "";
   switch (type) {
     case 'image':
-      prompt = "Extract all text from this image using OCR. Provide only the extracted text. If no text is found, state 'No text found in image.' Do not describe the image contents or provide additional commentary.";
+      prompt = "Extract all text from this image. Output only the text found.";
       break;
     case 'audio':
-      prompt = "Please provide a verbatim transcript of this audio file. Include speaker labels if possible and timestamp hints if appropriate. Focus on high precision.";
+      prompt = "Transcribe this audio verbatim. Use speaker labels.";
       break;
     case 'video':
-      prompt = "Please provide a detailed transcript of the speech in this video, and describe any significant visual context or text shown on screen.";
+      prompt = "Transcribe the speech in this video and briefly note key visual context.";
       break;
   }
 
@@ -57,11 +57,42 @@ export const transcribeMedia = async (file: File, type: MediaType): Promise<stri
           { text: prompt },
         ],
       },
+      config: {
+        // Disable thinking for maximum speed as per user request
+        thinkingConfig: { thinkingBudget: 0 }
+      }
     });
 
     return response.text || "No transcript generated.";
   } catch (error: any) {
     console.error("Transcription Engine Error:", error);
     throw new Error(error.message || "Failed to process media with AI.");
+  }
+};
+
+export const summarizeTranscript = async (transcript: string): Promise<string> => {
+  const ai = getAiClient();
+  
+  // Using Flash Lite for ultra-low latency text summarization
+  const modelName = 'gemini-flash-lite-latest';
+  
+  const prompt = `Summarize this transcript into concise bullet points:
+
+${transcript}`;
+
+  try {
+    const response: GenerateContentResponse = await ai.models.generateContent({
+      model: modelName,
+      contents: prompt,
+      config: {
+        // Minimize latency further
+        thinkingConfig: { thinkingBudget: 0 }
+      }
+    });
+
+    return response.text || "No summary generated.";
+  } catch (error: any) {
+    console.error("Summarization Error:", error);
+    throw new Error(error.message || "Failed to generate summary.");
   }
 };

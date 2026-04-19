@@ -6,8 +6,9 @@ export interface MediaFile {
   file: File;
   previewUrl: string;
   type: MediaType;
-  status: 'idle' | 'processing' | 'completed' | 'error';
+  status: 'idle' | 'processing' | 'summarizing' | 'completed' | 'error';
   transcript?: string;
+  summary?: string;
   error?: string;
 }
 
